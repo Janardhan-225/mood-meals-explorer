@@ -78,10 +78,10 @@ export function estimateCookingTime(instructions: string): string {
 
 export function categorizeByMood(recipe: Recipe): string[] {
   const categories: string[] = [];
-  const name = recipe.strMeal.toLowerCase();
-  const instructions = recipe.strInstructions.toLowerCase();
-  const tags = recipe.strTags?.toLowerCase() || '';
-  const category = recipe.strCategory.toLowerCase();
+  const name = recipe.strMeal ? recipe.strMeal.toLowerCase() : '';
+  const instructions = recipe.strInstructions ? recipe.strInstructions.toLowerCase() : '';
+  const tags = recipe.strTags ? recipe.strTags.toLowerCase() : '';
+  const category = recipe.strCategory ? recipe.strCategory.toLowerCase() : '';
 
   // Comfort food indicators
   if (
@@ -133,6 +133,7 @@ export function categorizeByMood(recipe: Recipe): string[] {
 
   // Exotic indicators
   if (
+    recipe.strArea && 
     recipe.strArea !== 'British' &&
     recipe.strArea !== 'American' &&
     !['beef', 'chicken', 'pork'].includes(category)

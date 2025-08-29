@@ -105,9 +105,9 @@ class RecipeAPI {
     if (query && recipes.length > 0) {
       const queryLower = query.toLowerCase();
       recipes = recipes.filter(recipe =>
-        recipe.strMeal.toLowerCase().includes(queryLower) ||
-        recipe.strInstructions.toLowerCase().includes(queryLower) ||
-        recipe.strTags?.toLowerCase().includes(queryLower)
+        (recipe.strMeal && recipe.strMeal.toLowerCase().includes(queryLower)) ||
+        (recipe.strInstructions && recipe.strInstructions.toLowerCase().includes(queryLower)) ||
+        (recipe.strTags && recipe.strTags.toLowerCase().includes(queryLower))
       );
     }
 
