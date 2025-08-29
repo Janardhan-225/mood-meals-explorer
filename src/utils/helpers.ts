@@ -31,8 +31,8 @@ export function getYouTubeEmbedUrl(youtubeUrl?: string): string | null {
   return null;
 }
 
-export function estimateCookingTime(instructions: string): string {
-  const instructionsLower = instructions.toLowerCase();
+export function estimateCookingTime(instructions: string | null | undefined): string {
+  const instructionsLower = (instructions || '').toLowerCase();
   
   // Look for time indicators
   const timePatterns = [
@@ -58,12 +58,12 @@ export function estimateCookingTime(instructions: string): string {
 
   if (totalMinutes === 0) {
     // Estimate based on complexity
-    const ingredientCount = parseIngredients({ strInstructions: instructions } as Recipe).length;
-    const instructionLength = instructions.length;
+    // Removed incorrect usage of parseIngredients as it requires a full Recipe object
+    const instructionLength = (instructions || '').length;
     
-    if (instructionLength < 300 && ingredientCount < 5) {
+    if (instructionLength < 300) {
       return '15-30 mins';
-    } else if (instructionLength < 600 && ingredientCount < 8) {
+    } else if (instructionLength < 600) {
       return '30-45 mins';
     } else {
       return '45-60 mins';
