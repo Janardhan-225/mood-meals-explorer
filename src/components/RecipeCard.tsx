@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { Recipe } from '@/types/recipe';
 import { Heart, Clock, MapPin, ChefHat } from 'lucide-react';
 import { useRecipe } from '@/context/RecipeContext';
@@ -9,23 +9,23 @@ interface RecipeCardProps {
   onClick: (recipe: Recipe) => void;
 }
 
-export function RecipeCard({ recipe, onClick }: RecipeCardProps) {
+export const RecipeCard = memo(({ recipe, onClick }: RecipeCardProps) => {
   const { isFavorite, addToFavorites, removeFromFavorites } = useRecipe();
   const isLiked = isFavorite(recipe.idMeal);
   const cookingTime = estimateCookingTime(recipe.strInstructions);
 
-  const handleFavoriteClick = (e: React.MouseEvent) => {
+  const handleFavoriteClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     if (isLiked) {
       removeFromFavorites(recipe.idMeal);
     } else {
       addToFavorites(recipe);
     }
-  };
+  }, [isLiked, recipe, addToFavorites, removeFromFavorites]);
 
-  const handleCardClick = () => {
+  const handleCardClick = useCallback(() => {
     onClick(recipe);
-  };
+  }, [recipe, onClick]);
 
   return (
     <div 
@@ -101,4 +101,6 @@ export function RecipeCard({ recipe, onClick }: RecipeCardProps) {
       </div>
     </div>
   );
-}
+});
+
+RecipeCard.displayName = 'RecipeCard';

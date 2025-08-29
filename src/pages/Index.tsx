@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, ChefHat, Sparkles, TrendingUp, Shuffle } from 'lucide-react';
 import { Recipe, SearchFilters } from '@/types/recipe';
@@ -18,6 +18,10 @@ const Index = () => {
   const [trendingRecipes, setTrendingRecipes] = useState<Recipe[]>([]);
   const [showFilters, setShowFilters] = useState(false);
 
+  // Memoize expensive computations
+  const hasResults = useMemo(() => state.recipes.length > 0, [state.recipes.length]);
+  const hasSearch = useMemo(() => state.searchQuery.trim().length > 0, [state.searchQuery]);
+
   useEffect(() => {
     // Load trending recipes on mount
     const loadTrendingRecipes = async () => {
@@ -35,7 +39,7 @@ const Index = () => {
     loadTrendingRecipes();
   }, [dispatch]);
 
-  const handleSearch = async (query: string) => {
+  const handleSearch = useCallback(async (query: string) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       dispatch({ type: 'SET_SEARCH_QUERY', payload: query });
@@ -51,16 +55,16 @@ const Index = () => {
       dispatch({ type: 'SET_ERROR', payload: 'Failed to search recipes' });
       console.error('Search error:', error);
     }
-  };
+  }, [dispatch, state.filters]);
 
-  const handleFilterChange = (newFilters: SearchFilters) => {
+  const handleFilterChange = useCallback((newFilters: SearchFilters) => {
     dispatch({ type: 'SET_FILTERS', payload: newFilters });
     if (state.searchQuery) {
       handleSearch(state.searchQuery);
     }
-  };
+  }, [dispatch, state.searchQuery, handleSearch]);
 
-  const handleCuisineSelect = async (cuisine: string) => {
+  const handleCuisineSelect = useCallback(async (cuisine: string) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const recipes = await recipeAPI.getRecipesByArea(cuisine);
@@ -70,9 +74,9 @@ const Index = () => {
       dispatch({ type: 'SET_ERROR', payload: 'Failed to load cuisine recipes' });
       console.error('Cuisine search error:', error);
     }
-  };
+  }, [dispatch, state.filters]);
 
-  const handleRandomRecipe = async () => {
+  const handleRandomRecipe = useCallback(async () => {
     try {
       const randomRecipe = await recipeAPI.getRandomRecipe();
       if (randomRecipe) {
@@ -81,15 +85,21 @@ const Index = () => {
     } catch (error) {
       console.error('Error getting random recipe:', error);
     }
-  };
+  }, [navigate]);
 
-  const handleRecipeClick = (recipe: Recipe) => {
+  const handleRecipeClick = useCallback((recipe: Recipe) => {
     dispatch({ type: 'SET_SELECTED_RECIPE', payload: recipe });
     navigate(`/recipe/${recipe.idMeal}`);
-  };
+  }, [dispatch, navigate]);
 
-  const hasResults = state.recipes.length > 0;
-  const hasSearch = state.searchQuery.trim().length > 0;
+  const clearSearch = useCallback(() => {
+    dispatch({ type: 'SET_SEARCH_QUERY', payload: '' });
+    dispatch({ type: 'SET_RECIPES', payload: [] });
+  }, [dispatch]);
+
+  const toggleFilters = useCallback(() => {
+    setShowFilters(prev => !prev);
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -123,14 +133,15 @@ const Index = () => {
               and create unforgettable culinary experiences.
             </p>
 
-            {/* Search Bar */}
-            <div className="max-w-2xl mx-auto mb-8">
+            {/* Search Bar - Now Compact */}
+            <div className="max-w-lg mx-auto mb-8">
               <SearchBar
                 value={state.searchQuery}
                 onChange={(value) => dispatch({ type: 'SET_SEARCH_QUERY', payload: value })}
                 onSearch={handleSearch}
-                placeholder="Search recipes, ingredients, or cuisines..."
-                className="text-lg"
+                placeholder="Search recipes, ingredients..."
+                compact={true}
+                className="text-base"
               />
             </div>
 
@@ -144,7 +155,7 @@ const Index = () => {
                 Surprise Me
               </Button>
               <Button 
-                onClick={() => setShowFilters(!showFilters)}
+                onClick={toggleFilters}
                 className="btn-secondary flex items-center gap-2"
               >
                 <Search className="w-5 h-5" />
@@ -203,7 +214,7 @@ const Index = () => {
                 <p className="text-muted-foreground mb-6">
                   Try adjusting your search terms or browse our trending recipes below
                 </p>
-                <Button onClick={() => dispatch({ type: 'SET_SEARCH_QUERY', payload: '' })}>
+                <Button onClick={clearSearch}>
                   Clear Search
                 </Button>
               </div>

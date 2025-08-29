@@ -6,6 +6,7 @@ import { recipeAPI } from '@/utils/api';
 import { parseIngredients, getYouTubeEmbedUrl, estimateCookingTime } from '@/utils/helpers';
 import { useRecipe } from '@/context/RecipeContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { RelatedRecipes } from '@/components/RelatedRecipes';
 import { Button } from '@/components/ui/button';
 
 export default function RecipeDetail() {
@@ -73,6 +74,10 @@ export default function RecipeDetail() {
     } else {
       addToFavorites(recipe);
     }
+  };
+
+  const handleRecipeClick = (newRecipe: Recipe) => {
+    navigate(`/recipe/${newRecipe.idMeal}`);
   };
 
   return (
@@ -241,6 +246,15 @@ export default function RecipeDetail() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Related Recipes Section */}
+        <div className="container mx-auto px-4 py-16">
+          <RelatedRecipes 
+            recipe={recipe} 
+            onRecipeClick={handleRecipeClick}
+            limit={6}
+          />
         </div>
       </div>
     </div>
